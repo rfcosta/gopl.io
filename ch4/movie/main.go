@@ -20,13 +20,32 @@ type Movie struct {
 	Actors []string
 }
 
+type Title struct {
+	Title string
+}
+
+type Entry struct {
+	Title string
+	Year  int  `json:"year of release"`
+	Color bool `json:"color,omitempty"`
+}
+
 var movies = []Movie{
-	{Title: "Casablanca", Year: 1942, Color: false,
+	{Title: "Casablanca",
+		Year:   1942,
+		Color:  false,
 		Actors: []string{"Humphrey Bogart", "Ingrid Bergman"}},
-	{Title: "Cool Hand Luke", Year: 1967, Color: true,
-		Actors: []string{"Paul Newman"}},
-	{Title: "Bullitt", Year: 1968, Color: true,
-		Actors: []string{"Steve McQueen", "Jacqueline Bisset"}},
+	{Title: "Cool Hand Luke",
+		Year:  1967,
+		Color: true,
+		Actors: []string{
+			"Paul Newman"}},
+	{Title: "Bullitt",
+		Year:  1968,
+		Color: true,
+		Actors: []string{
+			"Steve McQueen",
+			"Jacqueline Bisset"}},
 	// ...
 }
 
@@ -53,12 +72,27 @@ func main() {
 		//!-MarshalIndent
 
 		//!+Unmarshal
-		var titles []struct{ Title string }
+
+		//var titles []struct{ Title string }
+		var titles []Title
+
 		if err := json.Unmarshal(data, &titles); err != nil {
 			log.Fatalf("JSON unmarshaling failed: %s", err)
 		}
 		fmt.Println(titles) // "[{Casablanca} {Cool Hand Luke} {Bullitt}]"
 		//!-Unmarshal
+
+		var movies_entries []Entry
+		if err := json.Unmarshal(data, &movies_entries); err != nil {
+			log.Fatalf("JSON unmarshaling failed: %s", err)
+		}
+		fmt.Println(movies_entries) // "[{Casablanca} {Cool Hand Luke} {Bullitt}]"
+
+		dat, er := json.MarshalIndent(movies_entries, "", "    ")
+		if er != nil {
+			log.Fatalf("JSON marshaling failed: %s", er)
+		}
+		fmt.Printf("%s\n", dat)
 	}
 }
 
