@@ -9,10 +9,38 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 )
 
 //!+
+type VizItemImpl struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+type VizTmMetric struct {
+	ValueType  string      `json:"valueType"`
+	MetricType string      `json:"metricType"`
+	Bucket     int32       `json:"bucket"`
+	Tags       []string    `json:"tags"`
+	ItemImpl   VizItemImpl `json:"itemImpl"`
+}
+
+type VizChart struct {
+	Title     string        `json:"title"`
+	TmMetrics []VizTmMetric `json:"tmMetrics"`
+	X         int           `json:"x"`
+	Y         int           `json:"y"`
+	ViewType  string        `json:"viewType"`
+}
+type VizView struct {
+	Charts          []VizChart `json:"charts"`
+	EditableOcmTags []string   `json:"editableOcmTags"`
+	DefaultTimeSpan int32      `json:"defaultTimeSpan"`
+	Granularity     int        `json:"granularity"`
+}
+
 type Movie struct {
 	Title  string
 	Year   int  `json:"released"`
@@ -93,7 +121,39 @@ func main() {
 			log.Fatalf("JSON marshaling failed: %s", er)
 		}
 		fmt.Printf("%s\n", dat)
+
+		for sq, movEntry := range movies_entries {
+			ent, err := json.MarshalIndent(movEntry, "", "    ")
+			if err != nil {
+				log.Fatalf("JSON marshaling failed: %s", err)
+			}
+			fmt.Printf("Seq: %d Entry: %s\n", sq, ent)
+
+		}
+
 	}
+
+	{
+		//!+File
+		for _, filename := range os.Args[1:] {
+			fmt.Printf("Processing file '%s'\n", filename)
+			data, err := ioutil.ReadFile(filename)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "dup3: %v\n", err)
+				continue
+			}
+
+			vizView := VizView{}
+
+			if err := json.Unmarshal([]byte(data), &vizView); err != nil {
+				log.Fatalf("JSON unmarshaling failed: %s", err)
+			}
+			fmt.Println(vizView)
+		}
+		//!-File
+
+	}
+
 }
 
 /*
